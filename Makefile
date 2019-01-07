@@ -20,10 +20,11 @@ docker-run:
 
 docker-shell:
 	docker run --rm -it 						\
+		--entrypoint=/bin/bash 					\
 		-v ${PWD}:/app							\
 		-v /:/host 							 	\
 		-v /Users/cainelli/.kube/:/root/.kube	\
-		cainelli/${SHORT_NAME} bash
+		cainelli/${SHORT_NAME}
 docker: build docker-run
 
 docker-push:

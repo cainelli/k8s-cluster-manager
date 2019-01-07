@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: k8s-cluster-manager
-    image: cainelli/k8s-cluster-manager
+    image: quay.io/cainelli/k8s-cluster-manager
     command:
     - /k8s-cluster-manager
     - --assets /assets

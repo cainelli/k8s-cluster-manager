@@ -10,15 +10,11 @@ RUN apk add --no-cache  \
       dep               \
       zlib-dev
 
-
-ENV GOOS linux
-ENV GOARCH amd64
-
 RUN go get . 
 # TODO move to dep instead.
 # RUN dep ensure 
 
-RUN go build -ldflags "-X main.GitCommit=$(git rev-parse --short HEAD)" -tags static_all .
+RUN make build
 
 FROM ubuntu
 
