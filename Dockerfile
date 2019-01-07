@@ -37,7 +37,6 @@ RUN helm plugin install https://github.com/rimusz/helm-tiller
 
 COPY --from=builder /go/src/github.com/getyourguide/k8s-cluster-manager/k8s-cluster-manager .
 COPY entrypoint.sh /
-COPY k8s-cluster-manager /
 
 WORKDIR /
 
