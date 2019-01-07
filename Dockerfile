@@ -41,4 +41,5 @@ COPY k8s-cluster-manager /
 
 WORKDIR /
 
+ENTRYPOINT [ "/entrypoint.sh" ]
 # CMD ["/app/k8s-cluster-manager"]
