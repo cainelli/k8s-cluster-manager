@@ -8,6 +8,7 @@ RUN apk add --no-cache  \
       git 			\
       musl-dev          \
       dep               \
+      make              \
       zlib-dev
 
 RUN go get . 
