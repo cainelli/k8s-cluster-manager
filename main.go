@@ -14,8 +14,10 @@ import (
 	"github.com/BurntSushi/toml"
 	options "github.com/mreiferson/go-options"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/retry"
 )
 
 var opts = NewOptions()
@@ -26,35 +28,41 @@ type Status struct {
 }
 
 // WaitPodsToBeReady waits until all pods be ready before return.
-// TODO: implement exponentional backoffs and eventually fails
 func WaitPodsToBeReady(c *kubernetes.Clientset) {
-	for {
-		pods, err := c.CoreV1().Pods("").List(metav1.ListOptions{LabelSelector: ""})
-		if err != nil {
-			panic(err.Error())
-		}
-		fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+	stopCh := make(chan struct{})
+	wait.Until(func() {
+		// this gives us a few quick retries before a long pause and then a few more quick retries
+		err := wait.ExponentialBackoff(retry.DefaultRetry, func() (bool, error) {
 
-		ready := true
-		for _, p := range pods.Items {
-			if p.Status.Phase != "Running" {
-				ready = false
+			pods, err := c.CoreV1().Pods("").List(metav1.ListOptions{LabelSelector: ""})
+			if err != nil {
+				LogError("Error getting Pods", err)
+				return false, nil
 			}
-		}
+			fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 
-		if ready {
-			fmt.Println("All pods running")
-			return
-		}
+			ready := true
+			for _, p := range pods.Items {
+				if p.Status.Phase != "Running" {
+					ready = false
+				}
+			}
 
-		time.Sleep(10 * time.Second)
-	}
+			if ready {
+				fmt.Println("All pods running")
+				return true, nil
+			}
+
+			return false, err
+		})
+		if err == nil {
+			close(stopCh)
+		}
+	}, 1*time.Minute, stopCh)
 }
 
 func SetupCoreAddons() {
 	chartsPath := fmt.Sprintf("%s/charts", opts.AssetsPath)
-
-	// cmd := exec.Command("helm", "template", chartsPath, fmt.Sprintf("--output %s/_generated/", chartsPath))
 
 	charts, err := ioutil.ReadDir(chartsPath)
 	if err != nil {
@@ -74,31 +82,6 @@ func SetupCoreAddons() {
 		}
 	}
 
-	// decode := scheme.Codecs.UniversalDeserializer().Decode
-	// obj, _, err := decode(out, nil, nil)
-
-	// if err != nil {
-	// 	log.Fatal(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
-	// }
-
-	// fmt.Printf("%v", obj)
-
-	// now use switch over the type of the object
-	// and match each type-case
-	// switch o := obj.(type) {
-	// case *v1.Pod:
-	// 	// o is a pod
-	// case *v1beta1.Role:
-	// 	// o is the actual role Object with all fields etc
-	// case *v1beta1.RoleBinding:
-	// case *v1beta1.ClusterRole:
-	// case *v1beta1.ClusterRoleBinding:
-	// case *v1.ServiceAccount:
-	// default:
-	// 	//o is unknown for us
-	// }
-
-	// fmt.Printf(string(out))
 }
 
 func BootstrapCluster() {
