@@ -63,7 +63,9 @@ func SetupCoreAddons() {
 
 	for _, c := range charts {
 		fmt.Printf("installing chart %s\n", c.Name())
-		cmd := exec.Command("helm", "install", chartsPath, "/", c.Name())
+
+		cPath := fmt.Sprintf("%s/%s/", chartsPath, c.Name())
+		cmd := exec.Command("helm", "install", cPath)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			LogError("cmd.Run() failed with", err)
