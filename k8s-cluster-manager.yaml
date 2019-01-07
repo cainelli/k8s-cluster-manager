@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: k8s-cluster-manager
+  namespace: kube-system
+spec:
+  containers:
+  - name: k8s-cluster-manager
+    image: cainelli/k8s-cluster-manager
+    command:
+    - /k8s-cluster-manager
+    - --assets /assets
+    - --kubernetes-path /kubernetes
+    - --kubeconfig=/assets/auth/kubeconfig
+    volumeMounts:
+    - mountPath: /kubernetes
+      name: kubernetes
+      readOnly: false
+    - mountPath: /assets
+      name: assets
+      readOnly: true
+  hostNetwork: true
+  volumes:
+  - name: kubernetes
+    hostPath:
+      path: /etc/kubernetes
+  - name: assets
+    hostPath:
+      path: /root/assets
