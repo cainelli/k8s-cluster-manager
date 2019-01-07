@@ -15,3 +15,5 @@ assets/
 kubernetes/
 
 k8s-cluster-manager
+
+vendor

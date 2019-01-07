@@ -11,21 +11,20 @@ RUN apk add --no-cache  \
       make              \
       zlib-dev
 
-RUN go get . 
-# TODO move to dep instead.
-# RUN dep ensure 
+RUN dep ensure 
 
 RUN make build
 
-FROM debian
+FROM alpine
 
-RUN apt-get update && apt-get install curl git -y
+# RUN apt-get update && apt-get install curl git -y
+RUN apk add --no-cache  \
+      git               \
+      curl			
 
 RUN curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.1-linux-amd64.tar.gz | tar -xvz \
     &&  mv linux-amd64/helm /usr/local/bin/ \
-    &&  mv linux-amd64/tiller /usr/local/bin/ \
-    && rm -rf /var/lib/apt/lists/*
-
+    &&  mv linux-amd64/tiller /usr/local/bin/
 
 ENV HELM_HOME /root/.helm
 RUN mkdir -p /root/.helm/plugins
