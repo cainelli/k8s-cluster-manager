@@ -1,5 +1,5 @@
 #!/bin/bash
 
-helm tiller start
+helm tiller start &
 
-/app/k8s-cluster-manager
+/k8s-cluster-manager "$@"
