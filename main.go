@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -51,16 +52,24 @@ func WaitPodsToBeReady(c *kubernetes.Clientset) {
 }
 
 func SetupCoreAddons() {
-	chartsPath := fmt.Sprintf("%s/charts/calico", opts.AssetsPath)
+	chartsPath := fmt.Sprintf("%s/charts", opts.AssetsPath)
 
 	// cmd := exec.Command("helm", "template", chartsPath, fmt.Sprintf("--output %s/_generated/", chartsPath))
 
-	cmd := exec.Command("helm", "install", chartsPath, "calico")
-	out, err := cmd.CombinedOutput()
+	charts, err := ioutil.ReadDir(chartsPath)
 	if err != nil {
-		LogError("cmd.Run() failed with", err)
-	} else {
-		fmt.Printf(string(out))
+		LogError("cannot list charts", err)
+	}
+
+	for _, c := range charts {
+		fmt.Printf("installing chart %s\n", c.Name())
+		cmd := exec.Command("helm", "install", chartsPath, "/", c.Name())
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			LogError("cmd.Run() failed with", err)
+		} else {
+			fmt.Printf(string(out))
+		}
 	}
 
 	// decode := scheme.Codecs.UniversalDeserializer().Decode
@@ -180,5 +189,5 @@ func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
 		return h
 	}
-	return os.Getenv("USERPROFILE") // windows
+	return ""
 }

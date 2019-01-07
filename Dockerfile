@@ -20,6 +20,7 @@ FROM alpine
 # RUN apt-get update && apt-get install curl git -y
 RUN apk add --no-cache  \
       git               \
+      bash              \
       curl			
 
 RUN curl https://storage.googleapis.com/kubernetes-helm/helm-v2.12.1-linux-amd64.tar.gz | tar -xvz \
