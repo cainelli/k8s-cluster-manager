@@ -17,7 +17,7 @@ RUN go get .
 
 RUN make build
 
-FROM ubuntu
+FROM debian
 
 RUN apt-get update && apt-get install curl git -y
 
