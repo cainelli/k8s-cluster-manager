@@ -55,6 +55,7 @@ func WaitPodsToBeReady(c *kubernetes.Clientset) {
 	}, 1*time.Minute, stopCh)
 }
 
+// SetupCoreAddons installs core charts present in assets/charts. Additionally it also installs Tiller.
 func SetupCoreAddons() {
 	chartsPath := fmt.Sprintf("%s/charts", opts.AssetsPath)
 
@@ -90,6 +91,7 @@ func SetupCoreAddons() {
 	}
 }
 
+// BootstrapCluster moves certificates, static manifests and kubeconfig from assets to /etc/kubernetes on the Host.
 func BootstrapCluster() {
 	tlsPath := fmt.Sprintf("%s/tls", opts.AssetsPath)
 	authPath := fmt.Sprintf("%s/auth", opts.AssetsPath)

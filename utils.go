@@ -14,6 +14,7 @@ func LogError(msg string, err error) {
 	log.Printf("msg=%s: err=%v\n", msg, err)
 }
 
+// CopyFile copies a single file to a destination
 func CopyFile(src, dst string) error {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
@@ -39,6 +40,7 @@ func CopyFile(src, dst string) error {
 	return err
 }
 
+// CopyDir recursively copies a directory to a destination.
 func CopyDir(src string, dst string) error {
 	var err error
 	var fds []os.FileInfo
