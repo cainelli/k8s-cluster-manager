@@ -99,7 +99,7 @@ func BootstrapCluster() {
 
 	// setting api IPs
 	for ip := range opts.FailoverIps {
-		cmd := exec.Command("/usr/bin/ip", "addr", "add", fmt.Sprintf("%s/32", ip), "dev", "eth0")
+		cmd := exec.Command("ip", "addr", "add", fmt.Sprintf("%s/32", ip), "dev", "eth0")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			msg := fmt.Sprintf("failed to add %s to eth0", ip)
