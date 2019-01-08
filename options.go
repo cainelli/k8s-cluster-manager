@@ -10,10 +10,9 @@ import (
 // Options defines the configuration which the application will run with. Options can be set as environment variables, flag or cfg.
 // Is not mandatory all of them at once.
 type Options struct {
-	FailoverIps    []string `flag:"failover-ips" cfg:"failover_ips" env:"FAILOVER_IPS"`
-	AssetsPath     string   `flag:"assets" cfg:"assets_path" env:"ASSETS_PATH"`
-	KubernetesPath string   `flag:"kubernetes" cfg:"kubernetes_path" env:"KUBERNETES_PATH"`
-	KubeConfig     string   `flag:"kubeconfig" cfg:"kubeconfig" env:"KUBECONFIG"`
+	AssetsPath     string `flag:"assets" cfg:"assets_path" env:"ASSETS_PATH"`
+	KubernetesPath string `flag:"kubernetes" cfg:"kubernetes_path" env:"KUBERNETES_PATH"`
+	KubeConfig     string `flag:"kubeconfig" cfg:"kubeconfig" env:"KUBECONFIG"`
 }
 
 // EnvOptions defines options through environment variable.

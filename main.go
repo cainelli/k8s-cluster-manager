@@ -97,18 +97,6 @@ func BootstrapCluster() {
 	bootstrapSecretsPath := fmt.Sprintf("%s/bootstrap-secrets", opts.KubernetesPath)
 	manifestsPath := fmt.Sprintf("%s/manifests", opts.KubernetesPath)
 
-	// setting api IPs
-	for _, ip := range opts.FailoverIps {
-		cmd := exec.Command("ip", "addr", "add", fmt.Sprintf("%s/32", ip), "dev", "eth0")
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			msg := fmt.Sprintf("failed to add %s to eth0", ip)
-			LogError(msg, err)
-		} else {
-			fmt.Printf(string(out))
-		}
-	}
-
 	// copying certificates
 	err := CopyDir(tlsPath, bootstrapSecretsPath)
 	if err != nil {
@@ -135,7 +123,6 @@ func main() {
 
 	flagSet.String("assets", "/app/assets", "assets path")
 	flagSet.String("kubernetes", "/app/kubernetes", "host path")
-	flagSet.String("failover-ips", "10.4.0.1,10.4.0.2", "failover-ips of API server")
 	flagSet.String("kubeconfig", "", "host path")
 
 	flagSet.Parse(os.Args[1:])
