@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 )
@@ -9,9 +11,10 @@ import (
 // Options defines the configuration which the application will run with. Options can be set as environment variables, flag or cfg.
 // Is not mandatory all of them at once.
 type Options struct {
-	FailoverIps    string `flag:"failover-ips" cfg:"failover_ips" env:"FAILOVER_IPS"`
-	AssetsPath     string `flag:"assets" cfg:"assets_path" env:"ASSETS_PATH"`
-	KubernetesPath string `flag:"kubernetes" cfg:"kubernetes_path" env:"KUBERNETES_PATH"`
+	FailoverIps    []string `flag:"failover-ips" cfg:"failover_ips" env:"FAILOVER_IPS"`
+	AssetsPath     string   `flag:"assets" cfg:"assets_path" env:"ASSETS_PATH"`
+	KubernetesPath string   `flag:"kubernetes" cfg:"kubernetes_path" env:"KUBERNETES_PATH"`
+	KubeConfig     string   `flag:"kubeconfig" cfg:"kubeconfig" env:"KUBECONFIG"`
 }
 
 // EnvOptions defines options through environment variable.
@@ -46,6 +49,10 @@ func (cfg EnvOptions) LoadEnvForStruct(options interface{}) {
 
 // Validate function applies validations towards the options (flags/environment variables/config).
 func (o *Options) Validate() error {
+	if h := os.Getenv("HOME"); h != "" && opts.KubeConfig == "" {
+		opts.KubeConfig = filepath.Join(h, ".kube", "config")
+	}
+	fmt.Printf("%v", opts.FailoverIps)
 	return nil
 }
 

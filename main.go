@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"time"
 
@@ -21,11 +20,6 @@ import (
 )
 
 var opts = NewOptions()
-
-type Status struct {
-	IsAPIRunning        bool
-	IsBootstrapFinished bool
-}
 
 // WaitPodsToBeReady waits until all pods be ready before return.
 func WaitPodsToBeReady(c *kubernetes.Clientset) {
@@ -76,12 +70,24 @@ func SetupCoreAddons() {
 		cmd := exec.Command("helm", "install", "--host=127.0.0.1:44134", "--name", c.Name(), cPath)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			LogError("cmd.Run() failed with", err)
+			msg := fmt.Sprintf("failed to install %s", c)
+			LogError(msg, err)
 		} else {
 			fmt.Printf(string(out))
 		}
 	}
 
+	// install tiller
+	cmd := exec.Command("helm", "init", "--node-selectors node-role.kubernetes.io/master=''",
+		"--override", "'spec.template.spec.tolerations[0].key'='node-role.kubernetes.io/master'",
+		"--override", "'spec.template.spec.tolerations[0].operator'='Exists'",
+		"--override", "'spec.template.spec.tolerations[0].effect'='NoSchedule'")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		LogError("failed to install tiller", err)
+	} else {
+		fmt.Printf(string(out))
+	}
 }
 
 func BootstrapCluster() {
@@ -90,6 +96,18 @@ func BootstrapCluster() {
 	controlplaneManifestsPath := fmt.Sprintf("%s/bootstrap-manifests", opts.AssetsPath)
 	bootstrapSecretsPath := fmt.Sprintf("%s/bootstrap-secrets", opts.KubernetesPath)
 	manifestsPath := fmt.Sprintf("%s/manifests", opts.KubernetesPath)
+
+	// setting api IPs
+	for ip := range opts.FailoverIps {
+		cmd := exec.Command("/usr/bin/ip", "addr", "add", fmt.Sprintf("%s/32", ip), "dev", "eth0")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			msg := fmt.Sprintf("failed to add %s to eth0", ip)
+			LogError(msg, err)
+		} else {
+			fmt.Printf(string(out))
+		}
+	}
 
 	// copying certificates
 	err := CopyDir(tlsPath, bootstrapSecretsPath)
@@ -118,6 +136,7 @@ func main() {
 	flagSet.String("assets", "/app/assets", "assets path")
 	flagSet.String("kubernetes", "/app/kubernetes", "host path")
 	flagSet.String("failover-ips", "10.4.0.1,10.4.0.2", "failover-ips of API server")
+	flagSet.String("kubeconfig", "", "host path")
 
 	flagSet.Parse(os.Args[1:])
 
@@ -141,17 +160,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// connection to k8s
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
-
 	// use the current context in kubeconfig
-	k8sConfig, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	k8sConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeConfig)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -168,11 +178,4 @@ func main() {
 
 	SetupCoreAddons()
 
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return ""
 }
