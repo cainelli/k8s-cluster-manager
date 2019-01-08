@@ -98,7 +98,7 @@ func BootstrapCluster() {
 	manifestsPath := fmt.Sprintf("%s/manifests", opts.KubernetesPath)
 
 	// setting api IPs
-	for ip := range opts.FailoverIps {
+	for _, ip := range opts.FailoverIps {
 		cmd := exec.Command("ip", "addr", "add", fmt.Sprintf("%s/32", ip), "dev", "eth0")
 		out, err := cmd.CombinedOutput()
 		if err != nil {

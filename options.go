@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -52,7 +51,6 @@ func (o *Options) Validate() error {
 	if h := os.Getenv("HOME"); h != "" && opts.KubeConfig == "" {
 		opts.KubeConfig = filepath.Join(h, ".kube", "config")
 	}
-	fmt.Printf("%v", opts.FailoverIps)
 	return nil
 }
 
